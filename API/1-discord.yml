@@ -1,0 +1,31 @@
+name: Discord Notification
+
+on:
+  workflow_run:
+    workflows: 
+      - Deployment-2
+    types:
+      - completed
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Discord Webhook for Main
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          COMMIT_LINK="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          curl -X POST ${{ secrets.DISCORD_WEBHOOK }} \
+          -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "New Production Version deployed on api.kanpaibook.com",
+              "url": "https://api.kanpaibook.com",
+              "description": "[Changes]('$COMMIT_LINK')",
+              "fields": [
+                { "name": "Version", "value": "'$PACKAGE_VERSION'", "inline": false }
+              ],
+              "color": 255
+            }]
+          }'

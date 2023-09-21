@@ -1,0 +1,17 @@
+name: Deployment-Dev
+
+on:
+  workflow_run:
+    workflows: 
+      - Docker-Dev
+    types:
+      - completed
+
+jobs:
+  deploy-1:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Call kb-web-dev endpoint
+        run: |
+          curl -X POST http://restart.kanpaibook.com/update/kb-web-dev -H "API-Key: ${{ secrets.WEBHOOK_API_KEY}}"

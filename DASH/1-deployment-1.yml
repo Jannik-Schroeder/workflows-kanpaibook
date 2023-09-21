@@ -1,0 +1,18 @@
+name: Deployment-1
+
+on:
+  workflow_run:
+    workflows: 
+      - Docker
+    types:
+      - completed
+
+jobs:
+  deploy-1:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Call kb-dash-prod-1 endpoint
+        run: |
+          curl -X POST http://restart.kanpaibook.com/update/kb-dash-prod-1 -H "API-Key: ${{ secrets.WEBHOOK_API_KEY}}
